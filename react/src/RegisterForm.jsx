@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import VerificationCodeForm from './VerificationCodeForm';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import './css/register.css';  // Si vous avez des styles personnalisés supplémentaires
 
 const RegisterForm = ({ onRegisterSuccess }) => {
   const [user, setUser] = useState({
@@ -19,7 +21,8 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       ville: ''
     }]
   });
-  const [showVerification, setShowVerification] = useState(false);
+
+  const [passwordVisible, setPasswordVisible] = useState(false);  // État pour gérer la visibilité du mot de passe
 
   const [passwordValidations, setPasswordValidations] = useState({
     length: false,
@@ -50,7 +53,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
         [name]: value
       }));
     }
-  };  
+  };
 
   const validatePassword = (password) => {
     const lengthValid = password.length >= 12;
@@ -69,7 +72,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!length || !uppercase || !specialChar || !number) {
+    if (!passwordValidations.length || !passwordValidations.uppercase || !passwordValidations.specialChar || !passwordValidations.number) {
       console.error('Erreur de validation: Le mot de passe ne respecte pas toutes les règles.');
       return;
     }
@@ -78,7 +81,6 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       console.log(user);
       const response = await axios.post('/api/users/register', user);
       console.log('Utilisateur enregistré:', response.data);
-      setShowVerification(true);
       onRegisterSuccess(user.email);
     } catch (error) {
       if (error.response) {
@@ -92,43 +94,57 @@ const RegisterForm = ({ onRegisterSuccess }) => {
   };
 
   return (
-    <div>
-      {!showVerification ? (
-        <form onSubmit={handleSubmit}>
-          <input type="text" name="nom" placeholder="Nom" value={user.nom} onChange={handleChange} required />
-          <input type="text" name="prenom" placeholder="Prénom" value={user.prenom} onChange={handleChange} required />
-          <input type="date" name="dateNaissance" placeholder="Date de naissance" value={user.dateNaissance} onChange={handleChange} required />
-          <input type="email" name="email" placeholder="Email" value={user.email} onChange={handleChange} required />
-          <input type="password" name="password" placeholder="Mot de passe" value={user.password} onChange={handleChange} required />
-          {/* Affichage des règles de validation du mot de passe */}
-          <div style={{marginTop: '10px'}}>
-            <p>Votre mot de passe doit contenir :</p>
-            <ul>
-              <li style={{ color: passwordValidations.length ? 'green' : 'red' }}>
-                {passwordValidations.length ? '✔️' : '❌'} Au moins 12 caractères
-              </li>
-              <li style={{ color: passwordValidations.uppercase ? 'green' : 'red' }}>
-                {passwordValidations.uppercase ? '✔️' : '❌'} Une lettre majuscule
-              </li>
-              <li style={{ color: passwordValidations.specialChar ? 'green' : 'red' }}>
-                {passwordValidations.specialChar ? '✔️' : '❌'} Un caractère spécial
-              </li>
-              <li style={{ color: passwordValidations.number ? 'green' : 'red' }}>
-                {passwordValidations.number ? '✔️' : '❌'} Un chiffre
-              </li>
-            </ul>
-          </div>
-          <input type="text" name="telephone" placeholder="Téléphone" value={user.telephone} onChange={handleChange} required />
-          <input type="text" name="adresses.pays" placeholder="Pays" value={user.adresses.pays} onChange={handleChange} required />
-          <input type="text" name="adresses.codePostal" placeholder="Code Postal" value={user.adresses.codePostal} onChange={handleChange} required />
-          <input type="text" name="adresses.complementAdresse" placeholder="Complément d'adresse" value={user.adresses.complementAdresse} onChange={handleChange} />
-          <input type="text" name="adresses.rue" placeholder="Rue" value={user.adresses.rue} onChange={handleChange} required />
-          <input type="text" name="adresses.ville" placeholder="Ville" value={user.adresses.ville} onChange={handleChange} required />
-          <button type="submit">S&#39;inscrire</button>
-        </form>
-      ) : (
-        <VerificationCodeForm email={user.email} />
-      )}
+    <div className="container mx-auto p-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="text" name="nom" placeholder="Nom" value={user.nom} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="prenom" placeholder="Prénom" value={user.prenom} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="date" name="dateNaissance" placeholder="Date de naissance" value={user.dateNaissance} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="email" name="email" placeholder="Email" value={user.email} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+
+        <div className="relative">
+          <input 
+            type={passwordVisible ? "text" : "password"}  
+            name="password" 
+            placeholder="Mot de passe" 
+            value={user.password} 
+            onChange={handleChange} 
+            required 
+            className="w-full p-2 border border-gray-300 rounded pr-12"
+          />
+          <span 
+            className={`absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-500`}
+            onClick={() => setPasswordVisible(!passwordVisible)}
+          >
+            <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} />
+          </span>
+        </div>
+
+        <div className="mt-4">
+          <p>Votre mot de passe doit contenir :</p>
+          <ul className="list-disc list-inside">
+            <li className={passwordValidations.length ? 'text-green-500' : 'text-red-500'}>
+              {passwordValidations.length ? '✔️' : '❌'} Au moins 12 caractères
+            </li>
+            <li className={passwordValidations.uppercase ? 'text-green-500' : 'text-red-500'}>
+              {passwordValidations.uppercase ? '✔️' : '❌'} Une lettre majuscule
+            </li>
+            <li className={passwordValidations.specialChar ? 'text-green-500' : 'text-red-500'}>
+              {passwordValidations.specialChar ? '✔️' : '❌'} Un caractère spécial
+            </li>
+            <li className={passwordValidations.number ? 'text-green-500' : 'text-red-500'}>
+              {passwordValidations.number ? '✔️' : '❌'} Un chiffre
+            </li>
+          </ul>
+        </div>
+        
+        <input type="text" name="telephone" placeholder="Téléphone" value={user.telephone} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="adresses.pays" placeholder="Pays" value={user.adresses.pays} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="adresses.codePostal" placeholder="Code Postal" value={user.adresses.codePostal} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="adresses.complementAdresse" placeholder="Complément d'adresse" value={user.adresses.complementAdresse} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="adresses.rue" placeholder="Rue" value={user.adresses.rue} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <input type="text" name="adresses.ville" placeholder="Ville" value={user.adresses.ville} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+        <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">S&#39;inscrire</button>
+      </form>
     </div>
   );
 };
