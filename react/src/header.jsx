@@ -1,47 +1,60 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import './App.css';
-import RegisterForm from './RegisterForm';
-import LoginForm from './LoginForm';
-import ResetPasswordForm from './ResetPasswordForm';
-import VerificationCodeForm from './VerificationCodeForm';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const App = () => {
-  const [registeredEmail, setRegisteredEmail] = useState('');
+const Header = ({ isAuthenticated, onLogout }) => {
   const navigate = useNavigate();
 
-  const handleRegisterSuccess = (email) => {
-    setRegisteredEmail(email);
-    navigate('/verificationCode');
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login'); // Redirige vers la page de connexion après déconnexion
   };
 
   return (
-    <div>
-      <header>
-        <h1>Notre Application</h1>
-        <div>
-          <button onClick={() => navigate('/login')}>Login</button>
-          <button onClick={() => navigate('/register')}>Register</button>
+    <header className="bg-gray-800 text-white p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="text-lg font-bold">
+          <Link to="/">Mon Application</Link>
         </div>
-      </header>
-
-      <main>
-        <Routes>
-          <Route path="/" element={<h1>Bienvenue sur notre site!</h1>} />
-          <Route path="/login" element={<LoginForm onForgotPasswordClick={() => navigate('/resetPassword')} />} />
-          <Route path="/register" element={<RegisterForm onRegisterSuccess={handleRegisterSuccess} />} />
-          <Route path="/resetPassword" element={<ResetPasswordForm />} />
-          <Route path="/verificationCode" element={<VerificationCodeForm email={registeredEmail} />} />
-        </Routes>
-      </main>
-    </div>
+        <nav>
+          <ul className="flex space-x-4">
+            <li>
+              <Link to="/" className="hover:text-gray-400">Accueil</Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-gray-400">À propos</Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-gray-400">Contact</Link>
+            </li>
+            {isAuthenticated ? (
+              <>
+                <li>
+                  <Link to="/profile" className="hover:text-gray-400">Profil</Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="hover:text-gray-400 focus:outline-none"
+                  >
+                    Déconnexion
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/login" className="hover:text-gray-400">Connexion</Link>
+                </li>
+                <li>
+                  <Link to="/register" className="hover:text-gray-400">S&#39;inscrire</Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </nav>
+      </div>
+    </header>
   );
 };
 
-const AppWrapper = () => (
-  <Router>
-    <App />
-  </Router>
-);
-
-export default AppWrapper;
+export default Header;
