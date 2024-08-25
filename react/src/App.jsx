@@ -4,6 +4,7 @@ import Header from './Header';
 import HomePage from './HomePage';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import UpdateUserForm from './UpdateUser';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
+        <Route path="/update" element={<UpdateUserForm />} />
       </Routes>
     </Router>
   );
