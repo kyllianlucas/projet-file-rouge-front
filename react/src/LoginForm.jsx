@@ -1,31 +1,32 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom'; // Importer le hook useNavigate
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-const LoginForm = ({ onLoginSuccess, onForgotPasswordClick }) => {
+const LoginForm = ({ onForgotPasswordClick }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const navigate = useNavigate(); // Initialiser useNavigate
+  const navigate = useNavigate();
+  const { login } = useAuth(); // Utiliser le contexte
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post('/api/users/login', { email, password });
       console.log('Utilisateur connecté:', response.data);
-    
-      if (typeof onLoginSuccess === 'function') {
-        console.log('Appel de onLoginSuccess');
-        await onLoginSuccess(response.data); // Attendre la fonction avant de naviguer
-      } else {
-        console.warn('onLoginSuccess n\'est pas une fonction');
-      }
-    
-      console.log('Redirection vers la page d\'accueil');
-      navigate('/'); // Rediriger vers la page d'accueil
+      
+      // Stocker le token et le rôle admin dans le localStorage
+      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('role', response.data.admin ? 'ADMIN' : 'USER');
+      
+      // Marque l'utilisateur comme connecté et met à jour le rôle
+      login(response.data.accessToken, response.data.admin ? 'ADMIN' : 'USER');
+      
+      // Redirection vers la page d'accueil
+      navigate('/');
     } catch (error) {
       if (error.response) {
         console.error('Réponse serveur:', error.response.data);
@@ -36,7 +37,6 @@ const LoginForm = ({ onLoginSuccess, onForgotPasswordClick }) => {
       }
     }
   };
-  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +75,5 @@ const LoginForm = ({ onLoginSuccess, onForgotPasswordClick }) => {
     </form>
   );
 };
-
-
 
 export default LoginForm;

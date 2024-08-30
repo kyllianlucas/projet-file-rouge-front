@@ -132,8 +132,8 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="nom" placeholder="Nom" value={user.nom} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
+      <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <input type="text" name="nom" placeholder="Nom" value={user.nom} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded mt-10" />
         <input type="text" name="prenom" placeholder="Prénom" value={user.prenom} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
         <input type="date" name="dateNaissance" placeholder="Date de naissance" value={user.dateNaissance} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />
         <input type="email" name="email" placeholder="Email" value={user.email} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded" />

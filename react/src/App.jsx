@@ -5,25 +5,29 @@ import HomePage from './HomePage';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import UpdateUserForm from './UpdateUser';
+import { AuthProvider } from './AuthContext'; // Importer AuthProvider
+import { useAuth } from './AuthContext'; // Importer useAuth
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('token');
-  };
+  const { isAdmin } = useAuth(); // Vérifier si l'utilisateur est un admin
 
   return (
-    <Router>
-      <Header isAuthenticated={isAuthenticated} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
-        <Route path="/update" element={<UpdateUserForm />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/update" element={<UpdateUserForm />} />
+          {isAdmin && (
+            <>
+              
+            </>
+          )}
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
