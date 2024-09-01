@@ -10,22 +10,19 @@ const LoginForm = ({ onForgotPasswordClick }) => {
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // Utiliser le contexte
+  const { login } = useAuth(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post('/api/users/login', { email, password });
       console.log('Utilisateur connecté:', response.data);
-      
-      // Stocker le token et le rôle admin dans le localStorage
+
       localStorage.setItem('token', response.data.accessToken);
       localStorage.setItem('role', response.data.admin ? 'ADMIN' : 'USER');
-      
-      // Marque l'utilisateur comme connecté et met à jour le rôle
+
       login(response.data.accessToken, response.data.admin ? 'ADMIN' : 'USER');
-      
-      // Redirection vers la page d'accueil
+
       navigate('/');
     } catch (error) {
       if (error.response) {

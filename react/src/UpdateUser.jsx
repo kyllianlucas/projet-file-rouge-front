@@ -1,184 +1,175 @@
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-const UpdateUserForm = ({ userId }) => {
-  const [formData, setFormData] = useState({
-    nom: "",
-    prenom: "",
-    email: "",
-    telephone: "",
-    password: "",
-    rue: "",
-    ville: "",
-    codePostal: "",
-    pays: "",
+const UpdateUserForm = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
+  const [user, setUser] = useState({
+    nom: '',
+    prenom: '',
+    dateNaissance: '',
+    email: '',
+    telephone: '',
+    adresses: [{
+      pays: '',
+      codePostal: '',
+      complementAdresse: '',
+      rue: '',
+      ville: ''
+    }]
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else {
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get('/api/users/me', {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          setUser(response.data);
+        } catch (error) {
+          console.error('Erreur lors de la récupération des données utilisateur:', error);
+        }
+      };
 
-  const isAtLeastOneFieldFilled = () => {
-    return Object.values(formData).some((field) => field.trim() !== "");
+      fetchUserData();
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith('adresses')) {
+      const addressField = name.split('.')[1];
+      setUser(prevState => ({
+        ...prevState,
+        adresses: [{ ...prevState.adresses[0], [addressField]: value }]
+      }));
+    } else {
+      setUser(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isAtLeastOneFieldFilled()) {
-      alert("Veuillez remplir au moins un champ avant de soumettre le formulaire.");
-      return;
-    }
-
     try {
-      // Récupérer le token depuis le localStorage
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`http://localhost:8080/api/users/update/${userId}`, {
-        method: "PUT",
+      const response = await axios.put('/api/users/me', user, {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Ajout de l'en-tête d'autorisation
-        },
-        body: JSON.stringify(formData),
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        alert("Utilisateur mis à jour avec succès !");
-        console.log(updatedUser);
-      } else {
-        const errorData = await response.json();
-        console.error("Détails de l'erreur :", errorData);
-        alert(`Erreur lors de la mise à jour de l'utilisateur : ${response.status} ${response.statusText}`);
-      }
+      console.log('Utilisateur mis à jour:', response.data);
     } catch (error) {
-      console.error("Erreur lors de la requête :", error);
-      alert("Erreur lors de la mise à jour de l'utilisateur.");
+      console.error('Erreur lors de la mise à jour des données utilisateur:', error);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Mise à jour de l&#39;utilisateur</h2>
-      <form onSubmit={handleSubmit}>
-        {/* Champs de formulaire */}
-        <div className="mb-4">
-          <label htmlFor="nom" className="block text-sm font-medium text-gray-700">Nom</label>
-          <input
-            type="text"
-            id="nom"
-            name="nom"
-            value={formData.nom}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le nom"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="prenom" className="block text-sm font-medium text-gray-700">Prénom</label>
-          <input
-            type="text"
-            id="prenom"
-            name="prenom"
-            value={formData.prenom}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le prénom"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez l'email"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="telephone" className="block text-sm font-medium text-gray-700">Téléphone</label>
-          <input
-            type="tel"
-            id="telephone"
-            name="telephone"
-            value={formData.telephone}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le téléphone"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Mot de passe</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le mot de passe"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="rue" className="block text-sm font-medium text-gray-700">Rue</label>
-          <input
-            type="text"
-            id="rue"
-            name="rue"
-            value={formData.rue}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez la rue"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="ville" className="block text-sm font-medium text-gray-700">Ville</label>
-          <input
-            type="text"
-            id="ville"
-            name="ville"
-            value={formData.ville}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez la ville"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="codePostal" className="block text-sm font-medium text-gray-700">Code Postal</label>
-          <input
-            type="text"
-            id="codePostal"
-            name="codePostal"
-            value={formData.codePostal}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le code postal"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="pays" className="block text-sm font-medium text-gray-700">Pays</label>
-          <input
-            type="text"
-            id="pays"
-            name="pays"
-            value={formData.pays}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            placeholder="Entrez le pays"
-          />
-        </div>
-        <div className="text-center">
-          <button
-            type="submit"
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Mettre à jour
-          </button>
-        </div>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="text"
+        name="nom"
+        placeholder="Nom"
+        value={user.nom}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="prenom"
+        placeholder="Prénom"
+        value={user.prenom}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="date"
+        name="dateNaissance"
+        placeholder="Date de Naissance"
+        value={user.dateNaissance}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={user.email}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="tel"
+        name="telephone"
+        placeholder="Téléphone"
+        value={user.telephone}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="adresses.pays"
+        placeholder="Pays"
+        value={user.adresses[0].pays}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="adresses.codePostal"
+        placeholder="Code Postal"
+        value={user.adresses[0].codePostal}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="adresses.complementAdresse"
+        placeholder="Complément d'Adresse"
+        value={user.adresses[0].complementAdresse}
+        onChange={handleChange}
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="adresses.rue"
+        placeholder="Rue"
+        value={user.adresses[0].rue}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <input
+        type="text"
+        name="adresses.ville"
+        placeholder="Ville"
+        value={user.adresses[0].ville}
+        onChange={handleChange}
+        required
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
+        Mettre à jour
+      </button>
+    </form>
   );
 };
 

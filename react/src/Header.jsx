@@ -18,7 +18,7 @@ const Header = () => {
     <header className="bg-gray-800 text-white p-4 w-full fixed top-0 left-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-lg font-bold">
-          <Link to="/">Mon Application</Link>
+          <Link to="/" className="hover:text-gray-400">Mon Application</Link>
         </div>
         <nav>
           <ul className="flex space-x-4">
@@ -33,13 +33,15 @@ const Header = () => {
             </li>
             {isAuthenticated ? (
               <>
-                <li>
-                  <Link to="/update" className="hover:text-gray-400">Mettre à jour</Link>
-                </li>
                 {isAdmin && (
-                  <li>
-                    <Link to="/create-article" className="hover:text-gray-400">Créer Article</Link>
-                  </li>
+                  <>
+                    <li>
+                      <Link to="/create-article" className="hover:text-gray-400">Créer Article</Link>
+                    </li>
+                    <li>
+                      <Link to="/update-article" className="hover:text-gray-400">Mettre à jour l&#39;article</Link>
+                    </li>
+                  </>
                 )}
                 <li className="relative">
                   <button
@@ -50,7 +52,7 @@ const Header = () => {
                   </button>
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg">
-                      <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">Profil</Link>
+                      <Link to="/update" className="hover:text-gray-400">Mettre à jour</Link>
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100"
@@ -67,7 +69,7 @@ const Header = () => {
                   <Link to="/login" className="hover:text-gray-400">Connexion</Link>
                 </li>
                 <li>
-                  <Link to="/register" className="hover:text-gray-400">S&#39;inscrire</Link>
+                  <Link to="/register" className="hover:text-gray-400">S’inscrire</Link>
                 </li>
               </>
             )}

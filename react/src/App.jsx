@@ -5,30 +5,40 @@ import HomePage from './HomePage';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import UpdateUserForm from './UpdateUser';
-import { AuthProvider } from './AuthContext'; // Importer AuthProvider
-import { useAuth } from './AuthContext'; // Importer useAuth
+import CreateArticle from './CreateArticle'; // Importer le composant de création d'article
+import UpdateArticle from './UpdateArticle'; // Importer le composant de mise à jour d'article
+import ArticleDetail from './ArticleDetail'; // Importer le composant de détail d'article
+import { AuthProvider, useAuth } from './AuthContext';
 
 const App = () => {
-  const { isAdmin } = useAuth(); // Vérifier si l'utilisateur est un admin
+  const { isAdmin } = useAuth(); // Utilisation de useAuth pour récupérer isAdmin
 
   return (
-    <AuthProvider>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-          <Route path="/update" element={<UpdateUserForm />} />
-          {isAdmin && (
-            <>
-              
-            </>
-          )}
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/update/:id" element={<UpdateUserForm />} />
+        <Route path="/articles/:id" element={<ArticleDetail />} /> {/* Route pour voir le détail d'un article */}
+        {isAdmin && (
+          <>
+            {/* Routes réservées aux admins */}
+            <Route path="/create-article" element={<CreateArticle />} />
+            <Route path="/update-article/:id" element={<UpdateArticle />} />
+          </>
+        )}
+      </Routes>
+    </Router>
   );
 };
 
-export default App;
+// Assurez-vous que App est enveloppé par AuthProvider
+const WrappedApp = () => (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+
+export default WrappedApp;
