@@ -1,48 +1,43 @@
 // AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 // Création du contexte
-const AuthContext = createContext(null);
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
 
 // Fournisseur du contexte
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(!!token);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-
     if (token) {
-      setIsAuthenticated(true);
-      setIsAdmin(role === 'ADMIN');
+      const decodedToken = jwtDecode(token);
+      setIsAdmin(decodedToken.isAdmin);
     }
-  }, []);
+  }, [token]);
 
-  const login = (token, role) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
-
+  const login = (newToken) => {
+    setToken(newToken);
     setIsAuthenticated(true);
-    setIsAdmin(role === 'ADMIN');
+    const decodedToken = jwtDecode(newToken);
+    setIsAdmin(decodedToken.isAdmin);
+    localStorage.setItem('token', newToken);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-
+    setToken(null);
     setIsAuthenticated(false);
     setIsAdmin(false);
+    localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ token, isAuthenticated, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Hook personnalisé pour utiliser le contexte AuthContext
-export const useAuth = () => {
-  return useContext(AuthContext);
 };

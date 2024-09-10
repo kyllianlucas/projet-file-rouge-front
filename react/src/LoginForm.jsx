@@ -16,12 +16,9 @@ const LoginForm = ({ onForgotPasswordClick }) => {
     e.preventDefault();
     try {
       const response = await axios.post('/api/users/login', { email, password });
-      console.log('Utilisateur connecté:', response.data);
-
       localStorage.setItem('token', response.data.accessToken);
-      localStorage.setItem('role', response.data.admin ? 'ADMIN' : 'USER');
 
-      login(response.data.accessToken, response.data.admin ? 'ADMIN' : 'USER');
+      login(response.data.accessToken);
 
       navigate('/');
     } catch (error) {

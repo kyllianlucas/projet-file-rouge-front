@@ -52,7 +52,7 @@ const Header = () => {
                   </button>
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg">
-                      <Link to="/update" className="hover:text-gray-400">Mettre à jour</Link>
+                      <Link to="/update" className="block px-4 py-2 hover:bg-gray-100">Mettre à jour</Link>
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100"

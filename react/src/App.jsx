@@ -21,7 +21,6 @@ const App = () => {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/update/:id" element={<UpdateUserForm />} />
-        <Route path="/articles/:id" element={<ArticleDetail />} /> {/* Route pour voir le détail d'un article */}
         {isAdmin && (
           <>
             {/* Routes réservées aux admins */}

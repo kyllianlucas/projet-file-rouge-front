@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 const CreateArticleForm = () => {
   const [name, setName] = useState('');
@@ -8,27 +9,45 @@ const CreateArticleForm = () => {
   const [quantite, setQuantite] = useState(0);
   const [prix, setPrix] = useState(0.0);
   const [image, setImage] = useState(null);
-  const [categoryId, setCategoryId] = useState(''); // Valeur par défaut
+  const [categoryId, setCategoryId] = useState('');
+  const [sousCategoryName, setSousCategoryName] = useState(''); // Nom de la sous-catégorie
+  const [taille, setTaille] = useState(''); // Taille pour Tee-shirt
+  const [genre, setGenre] = useState(''); // Genre: Homme, Femme, Enfant
+  const { token } = useAuth();
   const navigate = useNavigate();
+
+  // Définir les options de taille en fonction du genre
+  const getTailleOptions = () => {
+    if (genre === 'enfant') {
+      return ['XS', 'S', 'M', 'L', 'XL']; // Tailles pour enfant
+    } else {
+      return ['S', 'M', 'L', 'XL']; // Tailles pour adulte (Homme/Femme)
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData();
     formData.append('article', JSON.stringify({ name, description, quantite, prix }));
-    formData.append('categoryId', categoryId);
+    formData.append('categoryName', categoryId); // Ajout du nom de la catégorie
+    formData.append('sousCategoryName', sousCategoryName); // Ajout du nom de la sous-catégorie
+    formData.append('taille', taille); // Ajout de la taille
+    formData.append('genre', genre); // Ajout du genre
+
     if (image) {
       formData.append('image', image);
     }
 
     try {
-      const response = await axios.post('/api/articles/creerArticle', formData, {
+      const response = await axios.post('/api/users/articles/creerArticle', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
         },
       });
       console.log('Article créé:', response.data);
-      navigate('/'); // Redirection après la création
+      navigate('/');
     } catch (error) {
       console.error('Erreur lors de la création de l\'article:', error);
     }
@@ -94,6 +113,43 @@ const CreateArticleForm = () => {
             <option value="accessoire">Accessoire</option>
           </select>
         </div>
+
+        {categoryId === 'tee-shirt' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Genre</label>
+              <select
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                required
+              >
+                <option value="" disabled>Choisir le genre</option>
+                <option value="homme">Homme</option>
+                <option value="femme">Femme</option>
+                <option value="enfant">Enfant</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Taille</label>
+              <select
+                value={taille}
+                onChange={(e) => setTaille(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                required
+              >
+                <option value="" disabled>Choisir la taille</option>
+                {getTailleOptions().map((tailleOption) => (
+                  <option key={tailleOption} value={tailleOption}>
+                    {tailleOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Image</label>
           <input
@@ -116,3 +172,4 @@ const CreateArticleForm = () => {
 };
 
 export default CreateArticleForm;
+  
