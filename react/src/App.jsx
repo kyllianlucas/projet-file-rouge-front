@@ -1,43 +1,40 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './Header';
+import Header from './components/Header';
 import HomePage from './HomePage';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
-import UpdateUserForm from './UpdateUser';
-import CreateArticle from './CreateArticle'; // Importer le composant de création d'article
-import UpdateArticle from './UpdateArticle'; // Importer le composant de mise à jour d'article
-import ArticleDetail from './ArticleDetail'; // Importer le composant de détail d'article
-import { AuthProvider, useAuth } from './AuthContext';
+import ConnexionPage from './components/Login';
+import InscriptionPage from './components/Register';
+import CreerArticlePage from './components/CreateArticle';
+import ArticlePage from './page/PageArticle';
+import UpdateArticle from './components/UpdateArticle';
+import PanierPage from './page/PagePanier';
+import Paiement from './page/PagePaiement'
+import { CartProvider } from './components/CartContext';
 
 const App = () => {
-  const { isAdmin } = useAuth(); // Utilisation de useAuth pour récupérer isAdmin
-
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
-        <Route path="/update/:id" element={<UpdateUserForm />} />
-        {isAdmin && (
-          <>
-            {/* Routes réservées aux admins */}
-            <Route path="/create-article" element={<CreateArticle />} />
-            <Route path="/update-article/:id" element={<UpdateArticle />} />
-          </>
-        )}
-      </Routes>
-    </Router>
+    <CartProvider>
+      <Router>
+        <div className="App">
+          <Header />
+          {/* Main content */}
+          <main className="container mx-auto p-4">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/connexion" element={<ConnexionPage />} />
+              <Route path="/inscription" element={<InscriptionPage />} />
+              <Route path="/article" element={<ArticlePage />} />
+              <Route path="/admin/creer-article" element={<CreerArticlePage />} />
+              <Route path="/articles/mettre-a-jour/:articleId" element={<UpdateArticle />} />
+              <Route path="/paiement" element={<Paiement/>} />
+            </Routes>
+          </main>
+          {/* Panier always visible */}
+          <PanierPage />
+        </div>
+      </Router>
+    </CartProvider>
   );
 };
 
-// Assurez-vous que App est enveloppé par AuthProvider
-const WrappedApp = () => (
-  <AuthProvider>
-    <App />
-  </AuthProvider>
-);
-
-export default WrappedApp;
+export default App;
