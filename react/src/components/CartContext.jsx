@@ -22,7 +22,6 @@ export const CartProvider = ({ children }) => {
   // Ajouter un article au panier et sauvegarder dans localStorage
   const addToCart = (item) => {
     const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
-
     let updatedCart;
     if (existingItem) {
       updatedCart = cartItems.map(cartItem =>
@@ -33,12 +32,11 @@ export const CartProvider = ({ children }) => {
     } else {
       updatedCart = [...cartItems, { ...item, quantity: 1 }];
     }
-
     setCartItems(updatedCart);
     saveCartToLocalStorage(updatedCart);
   };
 
-  // Supprimer un article du panier et sauvegarder dans localStorage
+  // Supprimer un article du panier
   const removeFromCart = (id) => {
     const updatedCart = cartItems.filter(item => item.id !== id);
     setCartItems(updatedCart);

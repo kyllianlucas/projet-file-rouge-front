@@ -1,8 +1,0 @@
-.input-wrapper {
-    @apply relative w-full;
-  }
-  
-  /* Style pour l'icône */
-  .icon-eye {
-    @apply absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500;
-  }

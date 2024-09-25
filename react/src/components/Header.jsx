@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showExpiredPopup, setShowExpiredPopup] = useState(false); // État pour gérer la pop-up
+  const [showExpiredPopup, setShowExpiredPopup] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,12 +16,12 @@ const Header = () => {
 
       try {
         const decodedToken = jwtDecode(token);
-        const exp = decodedToken.exp * 1000; // Convertir en millisecondes
+        const exp = decodedToken.exp * 1000;
         const currentTime = Date.now();
 
         if (exp < currentTime) {
           setShowExpiredPopup(true);
-          handleLogout(); // Optionnel : déconnecter l'utilisateur
+          handleLogout();
         } else {
           const userRole = decodedToken.role || decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
           if (userRole === 'ADMIN') {
@@ -42,45 +42,34 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-blue-800 text-white p-4">
+    <header className="bg-gray-800 text-white p-4 w-full">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-3xl font-bold">
-          <Link to="/">BadmintonShop</Link>
-        </div>
-
-        <nav>
-          <ul className="flex space-x-6">
-            <li><Link to="/" className="hover:underline">Accueil</Link></li>
-            <li><Link to="/article" className="hover:underline">Articles</Link></li>
-
-            {isLoggedIn ? (
-              <>
-                {isAdmin && (
-                  <li>
-                    <Link to="/admin/creer-article" className="hover:underline">Créer un Article</Link>
-                  </li>
-                )}
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 hover:underline"
-                  >
-                    Déconnexion
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li><Link to="/connexion" className="hover:underline">Connexion</Link></li>
-                <li><Link to="/inscription" className="hover:underline">Inscription</Link></li>
-              </>
-            )}
-          </ul>
+        <nav className="flex space-x-6">
+          <Link to="/" className="hover:underline">Accueil</Link>
+          <Link to="/article" className="hover:underline">Articles</Link>
         </nav>
 
-        <div className="flex items-center space-x-4">
-          <Link to="/panier" className="hover:underline">Panier</Link>
+        <div className="text-3xl font-bold text-center flex-grow">
+          <Link to="/">TheBadmintonShop</Link>
         </div>
+
+        <nav className="flex space-x-6">
+          {isLoggedIn ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin/creer-article" className="hover:underline">Créer un Article</Link>
+              )}
+              <button onClick={handleLogout} className="hover:underline">
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/connexion" className="hover:underline">Connexion</Link>
+              <Link to="/inscription" className="hover:underline">Inscription</Link>
+            </>
+          )}
+        </nav>
       </div>
 
       {/* Pop-up pour l'expiration du token */}
@@ -92,9 +81,9 @@ const Header = () => {
             <button 
               onClick={() => {
                 setShowExpiredPopup(false);
-                navigate('/'); // Redirection vers la page d'accueil
+                navigate('/'); 
               }}
-              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
             >
               OK
             </button>

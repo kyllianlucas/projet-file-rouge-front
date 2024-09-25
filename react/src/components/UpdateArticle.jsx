@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { ArticleContext } from '../components/ArticleContext'; // Importer le contexte
 
 const UpdateArticlePage = () => {
-  const { articleId } = useParams(); // Récupère l'ID de l'article depuis l'URL
-  const navigate = useNavigate();
+  const { selectedArticleId } = useContext(ArticleContext); // Récupérer l'ID de l'article
   const [article, setArticle] = useState({
     productName: '',
     description: '',
@@ -17,27 +16,30 @@ const UpdateArticlePage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Récupérer les détails de l'article à modifier
-    const fetchArticle = async () => {
-      try {
-        const response = await axios.get(`/api/public/produit/${articleId}`);
-        setArticle(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Erreur lors de la récupération de l\'article');
-        setLoading(false);
-      }
-    };
+    if (selectedArticleId) {
+      const fetchArticle = async () => {
+        try {
+          console.log(`Récupération de l'article avec l'ID : ${selectedArticleId}`);
+          const response = await axios.get(`/api/public/produit/${selectedArticleId}`);
+          setArticle(response.data);
+          setLoading(false);
+        } catch (err) {
+          console.error(err); // Journaliser l'erreur
+          setError('Erreur lors de la récupération de l\'article');
+          setLoading(false);
+        }
+      };
 
-    fetchArticle();
-  }, [articleId]);
+      fetchArticle();
+    }
+  }, [selectedArticleId]);
 
-  // Fonction pour mettre à jour l'article
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       await axios.put('/api/admin/produit/mettreAJour', article);
-      navigate('/articles'); // Redirection vers la liste des articles après mise à jour
+      alert('Article mis à jour avec succès');
+      // Redirection vers la liste des articles après mise à jour
     } catch (err) {
       console.error('Erreur lors de la mise à jour de l\'article', err);
     }
@@ -52,59 +54,57 @@ const UpdateArticlePage = () => {
   }
 
   return (
-    <div className="container mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6">Modifier l'Article</h1>
-      <form onSubmit={handleUpdate} className="space-y-4">
+    <div>
+      <h1>Modifier l'Article</h1>
+      <form onSubmit={handleUpdate}>
         <div>
-          <label className="block text-sm font-medium">Nom du produit</label>
+          <label>Nom du produit</label>
           <input 
             type="text" 
             value={article.productName} 
-            onChange={(e) => setArticle({ ...article, productName: e.target.value })} 
-            className="border p-2 w-full"
+            onChange={(e) => setArticle({ ...article, productName: e.target.value })}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Description</label>
+          <label>Description</label>
           <textarea 
             value={article.description} 
-            onChange={(e) => setArticle({ ...article, description: e.target.value })} 
-            className="border p-2 w-full"
+            onChange={(e) => setArticle({ ...article, description: e.target.value })}
           ></textarea>
         </div>
         <div>
-          <label className="block text-sm font-medium">Prix</label>
+          <label>Prix</label>
           <input 
             type="number" 
             value={article.prix} 
-            onChange={(e) => setArticle({ ...article, prix: e.target.value })} 
-            className="border p-2 w-full"
+            onChange={(e) => setArticle({ ...article, prix: e.target.value })}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Remise (%)</label>
+          <label>Remise</label>
           <input 
             type="number" 
             value={article.remise} 
-            onChange={(e) => setArticle({ ...article, remise: e.target.value })} 
-            className="border p-2 w-full"
+            onChange={(e) => setArticle({ ...article, remise: e.target.value })}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Prix Spécial</label>
+          <label>Prix Spécial</label>
           <input 
             type="number" 
             value={article.prixSpecial} 
-            onChange={(e) => setArticle({ ...article, prixSpecial: e.target.value })} 
-            className="border p-2 w-full"
+            onChange={(e) => setArticle({ ...article, prixSpecial: e.target.value })}
           />
         </div>
-        <button 
-          type="submit" 
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Mettre à jour
-        </button>
+        <div>
+          <label>Image URL</label>
+          <input 
+            type="text" 
+            value={article.image} 
+            onChange={(e) => setArticle({ ...article, image: e.target.value })}
+          />
+        </div>
+        <button type="submit">Mettre à Jour</button>
       </form>
     </div>
   );

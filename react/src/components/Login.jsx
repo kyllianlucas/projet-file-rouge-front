@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // État pour contrôler la visibilité du mot de passe
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -20,9 +23,9 @@ const Login = () => {
 
       // Décoder le token pour obtenir le rôle
       const decodedToken = jwtDecode(token);
-      const role = decodedToken.role || decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']; // Si le rôle est stocké dans un autre champ
-      console.log('Token reçu après la connexion :', token);  // Log du token
-      console.log('Rôle extrait du token :', role);  // Log du rôle
+      const role = decodedToken.role || decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      console.log('Token reçu après la connexion :', token);
+      console.log('Rôle extrait du token :', role);
 
       // Stocker le token et le rôle dans le localStorage
       localStorage.setItem('jwt-token', token);
@@ -31,36 +34,69 @@ const Login = () => {
       navigate('/');
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
+      // Optionnel : Afficher un message d'erreur utilisateur
     }
   };
 
+  const handleTogglePassword = () => setShowPassword(!showPassword); // Fonction pour basculer la visibilité du mot de passe
+
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form className="bg-white p-8 rounded-lg shadow-md w-80" onSubmit={handleLogin}>
-        <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form 
+        onSubmit={handleLogin} 
+        className="bg-white p-8 rounded-lg shadow-md max-w-md w-full"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Connexion</h2>
+        
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1" htmlFor="email">Email</label>
           <input
-            className="w-full px-3 py-2 border rounded"
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email" // Utilisation de placeholder au lieu de label
             required
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1" htmlFor="password">Mot de passe</label>
-          <input
-            className="w-full px-3 py-2 border rounded"
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+
+        <div className="mb-4">
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'} // Afficher le mot de passe si showPassword est vrai
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mot de passe" // Utilisation de placeholder au lieu de label
+              required
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button 
+              type="button" 
+              onClick={handleTogglePassword}
+              className="absolute right-2 top-2 text-gray-600"
+            >
+              <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} /> {/* Changer l'icône selon l'état */}
+            </button>
+          </div>
+          
+          {/* Lien pour le mot de passe oublié */}
+          <p className="mt-2 text-right text-blue-600 hover:underline cursor-pointer">
+            Mot de passe oublié ?
+          </p>
         </div>
-        <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Se connecter</button>
+
+        <button 
+          type="submit" 
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
+        >
+          Se connecter
+        </button>
+        
+        {/* Lien vers la page d'inscription */}
+        <p className="mt-4 text-center text-gray-600">
+          Pas de compte ? <a href="/register" className="text-blue-600 hover:underline">S'inscrire</a>
+        </p>
       </form>
     </div>
   );
