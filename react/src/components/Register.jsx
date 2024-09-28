@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import PasswordCriteriaModal from './PasswordCriteriaModal'; 
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate pour la redirection
 
 const Register = () => {
   const [user, setUser] = useState({
@@ -21,7 +21,8 @@ const Register = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [passwordCriteria, setPasswordCriteria] = useState({});
+  const navigate = useNavigate(); // Initialiser useNavigate pour la redirection
 
   const validatePassword = (password) => {
     const minLength = password.length >= 12;
@@ -36,7 +37,17 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8080/api/inscription', user);
-      console.log('Token:', response.data['jwt-token']);
+      const token = response.data['jwt-token'];
+      
+      if (token) {
+        // Stocker le jeton dans localStorage
+        localStorage.setItem('jwt-token', token);
+        
+        // Gérer l'état de connexion ici, si nécessaire (ex: contexte global)
+        
+        // Rediriger vers la page d'accueil
+        navigate('/'); // Redirection vers la page d'accueil
+      }
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
     }
@@ -55,11 +66,18 @@ const Register = () => {
 
     if (name === 'motDePasse') {
       const criteria = validatePassword(value);
-      setModalOpen(!Object.values(criteria).every(Boolean));
+      setPasswordCriteria(criteria);
     }
   };
 
   const handleTogglePassword = () => setShowPassword(!showPassword);
+
+  const criteriaMessages = [
+    { valid: passwordCriteria.minLength, message: "Le mot de passe doit contenir au moins 12 caractères" },
+    { valid: passwordCriteria.uppercase, message: "Le mot de passe doit contenir une lettre majuscule" },
+    { valid: passwordCriteria.digit, message: "Le mot de passe doit contenir un chiffre" },
+    { valid: passwordCriteria.specialChar, message: "Le mot de passe doit contenir un caractère spécial" },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -135,6 +153,13 @@ const Register = () => {
           </button>
         </div>
 
+        {/* Afficher les critères du mot de passe sous le champ de saisie */}
+        <div className="mt-2 text-sm text-gray-600">
+          {criteriaMessages.map((criteria, index) => (
+            !criteria.valid && <div key={index} className="text-red-500">{criteria.message}</div>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <input
             type="text"
@@ -200,12 +225,6 @@ const Register = () => {
           S&#39;inscrire
         </button>
       </form>
-
-      <PasswordCriteriaModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        criteria={validatePassword(user.motDePasse)}
-      />
     </div>
   );
 };

@@ -32,6 +32,7 @@ const Login = () => {
 
       // Redirection vers la page d'accueil sans recharger la page
       navigate('/');
+      window.location.reload();
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
       // Optionnel : Afficher un message d'erreur utilisateur
@@ -95,7 +96,7 @@ const Login = () => {
         
         {/* Lien vers la page d'inscription */}
         <p className="mt-4 text-center text-gray-600">
-          Pas de compte ? <a href="/register" className="text-blue-600 hover:underline">S'inscrire</a>
+          Pas de compte ? <a href="/register" className="text-blue-600 hover:underline">S&#39;inscrire</a>
         </p>
       </form>
     </div>

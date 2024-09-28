@@ -29,6 +29,7 @@ const AllArticlesPage = () => {
     const fetchArticles = async () => {
       try {
         const response = await axios.get('/api/produit/all');
+        console.log(response.data);
         setArticles(response.data);
         setLoading(false);
       } catch (err) {
@@ -45,11 +46,10 @@ const AllArticlesPage = () => {
       productName: article.nomProduit,
       description: article.description,
       prix: article.prix,
-      remise: article.remise,
+      reduction: article.reduction,
     };
   
     addToCart(articleData);
-    alert(`${article.nomProduit} ajouté au panier avec succès!`);
   };
 
   const handleUpdateRedirect = (articleId) => {
@@ -71,13 +71,17 @@ const AllArticlesPage = () => {
     }
   };
 
-  if (loading) {
-    return <p className="text-gray-600">Chargement des articles...</p>;
-  }
-
   if (error) {
     return <p className="text-red-600">{error}</p>;
   }
+
+  // Fonction pour tronquer la description
+  const truncateDescription = (description, maxLength = 100) => {
+    if (description.length > maxLength) {
+      return description.substring(0, maxLength) + '...'; // Ajouter des points de suspension si tronqué
+    }
+    return description;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -86,13 +90,23 @@ const AllArticlesPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article) => (
           <div key={article.articleId} className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow">
-            {article.imageUrl && (
-              <img src={article.imageUrl} alt={article.nomProduit} className="w-full h-48 object-cover rounded mb-4" />
+            {article.image && ( // Vérifiez que l'image existe
+              <img 
+                src={article.image} 
+                alt={article.nomProduit} 
+                className="w-full h-48 object-cover rounded mb-4" 
+              />
             )}
             <h2 className="text-xl font-bold text-gray-800">{article.nomProduit}</h2>
-            <p className="text-gray-600 mt-1">Description: {article.description}</p>
+            <p className="text-gray-600 mt-1">Description: {truncateDescription(article.description, 100)}</p> {/* Afficher un extrait de la description */}
             <p className="text-gray-800 mt-2">Prix : <span className="font-semibold">{article.prix} €</span></p>
-            <p className="text-gray-600">Remise : {article.remise}%</p>
+            
+            {/* Afficher la remise uniquement si elle n'est pas égale à 0 */}
+            
+            {article.reduction > 0 && (
+              <p className="text-gray-800 ">Réduction : <span className="font-semibold">{article.reduction}%</span></p>
+            )}
+
             <p className="text-gray-800">Prix Spécial : <span className="font-semibold">{article.prixSpecial} €</span></p>
             <div className={`mt-4 flex ${isAdmin ? 'justify-between' : 'justify-end'}`}>
               {isAdmin && (

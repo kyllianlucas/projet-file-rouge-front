@@ -56,8 +56,12 @@ const Header = () => {
         <nav className="flex space-x-6">
           {isLoggedIn ? (
             <>
+              <Link to="/mettre-a-jour-utilisateur"className="hover:underline">Mettre a jour Utilisateur</Link>
               {isAdmin && (
+                <>
+                <Link to="/admin/creer-categorie" className="hover:underline">Créer une Catégorie</Link>
                 <Link to="/admin/creer-article" className="hover:underline">Créer un Article</Link>
+                </>
               )}
               <button onClick={handleLogout} className="hover:underline">
                 Déconnexion
@@ -75,20 +79,20 @@ const Header = () => {
       {/* Pop-up pour l'expiration du token */}
       {showExpiredPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-5 rounded shadow-md">
-            <h2 className="text-lg font-bold">Session expirée</h2>
-            <p>Votre session a expiré. Veuillez vous reconnecter.</p>
-            <button 
-              onClick={() => {
-                setShowExpiredPopup(false);
-                navigate('/'); 
-              }}
-              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            >
-              OK
-            </button>
-          </div>
+        <div className="bg-white p-5 rounded shadow-md">
+          <h2 className="text-lg font-bold text-gray-800">Session expirée</h2>
+          <p className="text-gray-700">Votre session a expiré. Veuillez vous reconnecter.</p>
+          <button 
+            onClick={() => {
+              setShowExpiredPopup(false);
+              navigate('/'); 
+            }}
+            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            OK
+          </button>
         </div>
+      </div>
       )}
     </header>
   );

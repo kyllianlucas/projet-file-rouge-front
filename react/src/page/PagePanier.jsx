@@ -7,7 +7,7 @@ const PanierPage = () => {
   const navigate = useNavigate(); // Initialisation de la navigation
 
   // Calculer le prix total du panier
-  const totalAmount = cartItems.reduce((total, item) => total + item.prix * item.quantity, 0);
+  const totalAmount = cartItems.reduce((total, item) => total + (item.prix || 0) * (item.quantity || 0), 0);
 
   // Vérification de l'authentification
   const isAuthenticated = () => {
@@ -47,8 +47,8 @@ const PanierPage = () => {
     <div className="bg-gray-50 p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">Votre Panier</h2>
       <ul className="space-y-4">
-        {cartItems.map((item, index) => (
-          <li key={index} className="bg-white p-4 rounded shadow">
+        {cartItems.map((item) => (
+          <li key={item.id} className="bg-white p-4 rounded shadow">
             <div>
               <h3 className="text-xl font-bold text-gray-800">{item.productName}</h3>
               <p className="text-gray-600">{item.description}</p> {/* Affiche la description */}
@@ -77,14 +77,13 @@ const PanierPage = () => {
 
       <div className="mt-4">
         <h3 className="text-lg font-semibold text-gray-800">Total: <span className="font-bold">{totalAmount.toFixed(2)} €</span></h3>
+        <button 
+          onClick={handlePaymentRedirect} 
+          className="mt-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-200"
+        >
+          Procéder au Paiement
+        </button>
       </div>
-
-      <button 
-        onClick={handlePaymentRedirect}
-        className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-      >
-        Procéder au paiement
-      </button>
     </div>
   );
 };

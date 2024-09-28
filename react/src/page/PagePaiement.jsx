@@ -1,119 +1,100 @@
-import { useState, useEffect } from 'react';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import axios from 'axios';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe('votre_clé_publique_stripe');
+const stripePromise = loadStripe('pk_test_51Q3G0k09Qr72ALYgCKfXTJQTCJcOiWZgtQux1v8j0wyxM5hmwhzBaX5qcXrfEgqQyYDU16Y2k8rUbrVwTMoV4dAh007Wk9ZMnB'); // Remplacez par votre clé publique Stripe
 
-const PaiementPage = ({ totalAmount, panierItems = [] }) => {
+const CheckoutForm = ({ totalAmount, panierItems }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState('');
-  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
 
-  useEffect(() => {
-    const createPaymentIntent = async () => {
-      try {
-        const { data: clientSecret } = await axios.post('http://localhost:8080/api/payment/create-payment-intent', {
-          amount: totalAmount * 100,
-          currency: 'eur',
-        });
-        setClientSecret(clientSecret);
-      } catch (error) {
-        console.error("Erreur lors de la création de l'intention de paiement", error);
-      }
-    };
-
-    createPaymentIntent();
-  }, [totalAmount]);
-
-  const handlePayment = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
-      return;
+      return; // Assurez-vous que Stripe est chargé
     }
 
-    setIsPaymentProcessing(true);
+    const cardElement = elements.getElement(CardElement);
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-      },
-    });
+    // Créez un token ou une source à partir de la carte
+    const { error, token } = await stripe.createToken(cardElement);
 
-    if (result.error) {
-      setPaymentStatus('Le paiement a échoué : ' + result.error.message);
+    if (error) {
+      console.error('Error creating token:', error);
     } else {
-      if (result.paymentIntent.status === 'succeeded') {
-        setPaymentStatus('Paiement réussi !');
+      // Envoyez le token au serveur pour créer une session de paiement ou traiter le paiement
+      console.log('Received Stripe token:', token);
+      // Vous devez faire une requête à votre serveur ici
+      const response = await fetch('http://localhost:5000/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token.id,
+          items: panierItems.map(item => ({
+            id: item.id,
+            nom: item.nom,
+            prix: item.prix,
+            quantité: item.quantité,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        const session = await response.json();
+        console.log('Payment successful!', session);
+      } else {
+        console.error('Error processing payment:', response);
       }
     }
-
-    setIsPaymentProcessing(false);
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-[#F8F9FA] rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-[#343A40] mb-6">Récapitulatif du Panier</h2>
-
-      {/* Récapitulatif du Panier */}
-      <div className="bg-white rounded-lg shadow-md p-4">
-        <h3 className="font-semibold text-[#343A40]">Produits dans votre panier</h3>
-        {panierItems && panierItems.length > 0 ? (
-          panierItems.map((item) => (
-            <div key={item.id} className="flex justify-between border-b border-[#CED4DA] py-2">
-              <span className="text-[#6C757D]">{item.nom} x {item.quantité}</span>
-              <span className="text-[#343A40]">{item.prix} €</span>
-            </div>
-          ))
-        ) : (
-          <p className="text-[#343A40]">Votre panier est vide.</p>
-        )}
-        <div className="flex justify-between font-semibold mt-4">
-          <span>Total</span>
-          <span>{totalAmount} €</span>
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+      <div className="border border-gray-300 p-4 rounded-lg">
+        <label className="block text-gray-700 mb-2">Informations de carte bancaire</label>
+        <CardElement className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-
-      <h2 className="text-2xl font-bold text-[#343A40] mb-6">Paiement</h2>
-
-      <form onSubmit={handlePayment} className="space-y-4">
-        {/* Case pour la Carte */}
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <h3 className="font-semibold text-[#343A40]">Informations de la Carte</h3>
-          <div className="border border-[#CED4DA] rounded-md p-2 mb-4">
-            <CardElement className="p-2" />
-          </div>
-        </div>
-        <button 
-          type="submit" 
-          disabled={isPaymentProcessing}
-          className={`w-full py-2 px-4 text-white font-semibold rounded-md ${
-            isPaymentProcessing ? 'bg-[#6C757D]' : 'bg-[#007BFF] hover:bg-[#0056b3]'
-          } transition duration-200`}
-        >
-          {isPaymentProcessing ? 'Paiement en cours...' : 'Payer'}
-        </button>
-
-        {paymentStatus && (
-          <p className={`mt-4 text-sm ${paymentStatus.includes('échec') ? 'text-[#DC3545]' : 'text-[#155724]'}`}>
-            {paymentStatus}
-          </p>
-        )}
-      </form>
-    </div>
+      <h3 className="text-lg font-semibold">Total à payer: {totalAmount.toFixed(2)} €</h3>
+      <button 
+        type="submit" 
+        disabled={!stripe} 
+        className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-200"
+      >
+        Payer
+      </button>
+    </form>
   );
 };
 
-// Wrapper Stripe
-const PaiementWrapper = ({ totalAmount, panierItems }) => {
+const PaiementPage = () => {
+  const location = useLocation();
+  const { totalAmount, panierItems } = location.state || {};
+
+  if (!panierItems || totalAmount === undefined) {
+    return <p className="text-red-600">Erreur: Aucun article à payer.</p>;
+  }
+
   return (
     <Elements stripe={stripePromise}>
-      <PaiementPage totalAmount={totalAmount} panierItems={panierItems} />
+      <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Récapitulatif de la commande</h2>
+        <ul className="space-y-4">
+          {panierItems.map(item => (
+            <li key={item.id} className="bg-white p-4 rounded shadow">
+              <h3 className="text-xl font-bold text-gray-800">{item.nom}</h3>
+              <p className="text-gray-600">Quantité: {item.quantité}</p>
+              <p className="text-gray-800">Prix: {(item.prix).toFixed(2)} €</p>
+            </li>
+          ))}
+        </ul>
+        <CheckoutForm totalAmount={totalAmount} panierItems={panierItems} />
+      </div>
     </Elements>
   );
 };
 
-export default PaiementWrapper;
+export default PaiementPage;
